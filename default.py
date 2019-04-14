@@ -223,8 +223,6 @@ class UnixDiscordIpcClient(DiscordIpcClient):
     def _close(self):
         self._sock.close()
 
-ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
-
 def base_activity():
     activity = {
         'assets': {'large_image': 'default',
@@ -277,11 +275,24 @@ def get_data():
                 act['timestamps']['end'] =  int(time.time() + remainingtime)
     return act
 
+ipc = None
 monitor = xbmc.Monitor()
-while not monitor.abortRequested():
-    ipc.set_activity(get_data())
+
+while ipc == None:
+    try:
+        ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
+        break
+    except:
+        ipc = None
+        xbmc.log("Could not connect to Discord")
     if monitor.waitForAbort(15):
         break
+
+if ipc != None:
+    while not monitor.abortRequested():
+        ipc.set_activity(get_data())
+        if monitor.waitForAbort(15):
+            break
 
 ipc.clear_activity()
 ipc.close()
