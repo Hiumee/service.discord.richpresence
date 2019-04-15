@@ -2,7 +2,6 @@ import xbmc
 
 from abc import ABCMeta, abstractmethod
 import json
-import logging
 import os
 import socket
 import sys
@@ -139,7 +138,7 @@ class DiscordIpcClient():
                      'activity': act},
             'nonce': str(uuid.uuid4())
         }
-        return self.send_recv(data)
+        return self.send(data)
 
     def clear_activity(self):
         data = {
@@ -147,7 +146,7 @@ class DiscordIpcClient():
             'args': {'pid': os.getpid()},
             'nonce': str(uuid.uuid4())
         }
-        return self.send_recv(data)
+        return self.send(data)
 
 
 class WinDiscordIpcClient(DiscordIpcClient):
@@ -286,27 +285,34 @@ while ipc == None and not monitor.abortRequested():
         ipc = None
         xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
     if monitor.waitForAbort(15):
+        ipc = None
         break
 
-if ipc != None:
-    while not monitor.abortRequested():
-        try:
-            ipc.set_activity(get_data())
-        except:
-            xbmc.log("[Discord RP] Discord disconnected")
-            ipc = None
-            while ipc == None and not monitor.abortRequested():
-                try:
-                    ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
-                    ipc.set_activity(get_data())
-                    break
-                except:
-                    ipc = None
-                    xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
-                if monitor.waitForAbort(15):
-                    break
-        if monitor.waitForAbort(15):
-            break
+while ipc and not monitor.abortRequested():
+    try:
+        ipc.set_activity(get_data())
+        xbmc.log("[Discord RP] Updated")
+    except:
+        xbmc.log("[Discord RP] Discord disconnected")
+        ipc = None
+        while ipc == None and not monitor.abortRequested():
+            try:
+                ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
+                xbmc.log("[Discord RP] Reconnected")
+                ipc.set_activity(get_data())
+                xbmc.log("[Discord RP] Updated")
+                break
+            except Exception:
+                ipc = None
+                xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
+                xbmc.log("[Discord RP] [Error] "+str(Exception))
+            if monitor.waitForAbort(15):
+                xbmc.log("[Discord RP] Abort")
+                ipc = None
+                break
+    if monitor.waitForAbort(15):
+        xbmc.log("[Discord RP] Abort")
+        break
 
 
 xbmc.log("[Discord RP] Exiting...")
