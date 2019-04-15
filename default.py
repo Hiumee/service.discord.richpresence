@@ -278,13 +278,13 @@ def get_data():
 ipc = None
 monitor = xbmc.Monitor()
 
-while ipc == None:
+while ipc == None and not monitor.abortRequested():
     try:
         ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
         break
     except:
         ipc = None
-        xbmc.log("Could not connect to Discord")
+        xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
     if monitor.waitForAbort(15):
         break
 
@@ -293,20 +293,23 @@ if ipc != None:
         try:
             ipc.set_activity(get_data())
         except:
-            xbmc.log("Discord disconnected")
+            xbmc.log("[Discord RP] Discord disconnected")
             ipc = None
-            while ipc == None:
+            while ipc == None and not monitor.abortRequested():
                 try:
                     ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
                     ipc.set_activity(get_data())
                     break
                 except:
                     ipc = None
-                    xbmc.log("Could not connect to Discord")
+                    xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
                 if monitor.waitForAbort(15):
                     break
         if monitor.waitForAbort(15):
             break
 
-ipc.clear_activity()
-ipc.close()
+
+xbmc.log("[Discord RP] Exiting...")
+if ipc:
+    ipc.clear_activity()
+    ipc.close()
