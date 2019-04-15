@@ -290,7 +290,21 @@ while ipc == None:
 
 if ipc != None:
     while not monitor.abortRequested():
-        ipc.set_activity(get_data())
+        try:
+            ipc.set_activity(get_data())
+        except:
+            xbmc.log("Discord disconnected")
+            ipc = None
+            while ipc == None:
+                try:
+                    ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
+                    ipc.set_activity(get_data())
+                    break
+                except:
+                    ipc = None
+                    xbmc.log("Could not connect to Discord")
+                if monitor.waitForAbort(15):
+                    break
         if monitor.waitForAbort(15):
             break
 
