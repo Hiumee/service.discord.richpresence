@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
+    <category label="32001">
+    	<setting label="32002" type="bool" id="inmenu" default="true"/>
+    </category>
 </settings>

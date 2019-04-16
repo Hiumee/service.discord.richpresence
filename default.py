@@ -272,6 +272,10 @@ def get_data():
                 remainingtime /= data2['speed']
                 act['timestamps'] = {}
                 act['timestamps']['end'] =  int(time.time() + remainingtime)
+            return act
+
+    if xbmcaddon.Addon().getSetting('inmenu') == 'false':
+        return False
     return act
 
 ipc = None
@@ -290,7 +294,11 @@ while ipc == None and not monitor.abortRequested():
 
 while ipc and not monitor.abortRequested():
     try:
-        ipc.set_activity(get_data())
+        rpdata = get_data()
+        if rpdata:
+            ipc.set_activity(rpdata)
+        else:
+            ipc.clear_activity()
         xbmc.log("[Discord RP] Updated")
     except:
         xbmc.log("[Discord RP] Discord disconnected")
@@ -299,13 +307,17 @@ while ipc and not monitor.abortRequested():
             try:
                 ipc = DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
                 xbmc.log("[Discord RP] Reconnected")
-                ipc.set_activity(get_data())
+                rpdata = get_data()
+                if rpdata:
+                    ipc.set_activity(rpdata)
+                else:
+                    ipc.clear_activity()
                 xbmc.log("[Discord RP] Updated")
                 break
-            except Exception:
+            except Exception as e:
                 ipc = None
                 xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
-                xbmc.log("[Discord RP] [Error] "+str(Exception))
+                xbmc.log("[Discord RP] [Error] "+str(e))
             if monitor.waitForAbort(15):
                 xbmc.log("[Discord RP] Abort")
                 ipc = None
