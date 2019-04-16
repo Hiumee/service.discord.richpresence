@@ -25,5 +25,5 @@ Download link: [Download](https://github.com/Hiumee/service.discord.richpresence
 
 To install you have to go into Kodi Setting > Addons > Install from zip file (allow unknown sources) > Open the downloaded file
 
-## Bug submiting and features
+## Bug submitting and features
 You can open an issue or message me on Discord (Hiumee#6784)
