@@ -17,9 +17,8 @@ OP_CLOSE = 2
 OP_PING = 3
 OP_PONG = 4
 
+SUPPORTED_TYPES = ['episode', 'movie']
 
-
-#logger = xbmc.log
 
 class DiscordIpcError(Exception):
     pass
@@ -238,7 +237,7 @@ def get_data():
         data = data['item']
         data2 = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetProperties", "jsonrpc": "2.0", "method": "Player.GetProperties", "id": 1, "params": {"playerid": 1, "properties": ["speed", "time", "totaltime"]}}'))['result']
 
-        if data['type'] != 'unknown':
+        if data['type'] in SUPPORTED_TYPES:
 
             if data['type'] == 'episode':
                 act['state'] = '{}x{:02} {}'.format(data['season'],data['episode'],data['title'])
