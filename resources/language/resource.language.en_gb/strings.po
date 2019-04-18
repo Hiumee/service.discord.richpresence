@@ -13,3 +13,43 @@ msgstr ""
 msgctxt "#32002"
 msgid "Show presence while not playing"
 msgstr ""
+
+msgctxt "#32010"
+msgid "Customize"
+msgstr ""
+
+msgctxt "#32011"
+msgid "Movie"
+msgstr ""
+
+msgctxt "#32012"
+msgid "State"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Genre"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Title"
+msgstr ""
+
+msgctxt "#32015"
+msgid "None"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Details"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Episode"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Episode"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Show title"
+msgstr ""
