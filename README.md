@@ -17,7 +17,7 @@ Media types:
 
 Features:
 - [x] Display what is playing
-- [ ] Allow user to edit what is displayed and where
+- [ ] Allow user to edit what is displayed and where (partial done)
 - [ ] Image updating depending on media
 
 ## Download and Installation
