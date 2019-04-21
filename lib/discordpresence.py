@@ -158,6 +158,7 @@ class WinDiscordIpcClient(DiscordIpcClient):
         self.path = path
 
     def _write(self, data):
+        self._f.seek(0, 2)
         self._f.write(data)
         self._f.flush()
 
