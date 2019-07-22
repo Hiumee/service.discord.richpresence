@@ -14,6 +14,18 @@ msgctxt "#32002"
 msgid "Show presence while not playing"
 msgstr ""
 
+msgctxt "#32003"
+msgid "Playing ..."
+msgstr ""
+
+msgctxt "#32004"
+msgid "Watching"
+msgstr ""
+
+msgctxt "#32005"
+msgid "Kodi"
+msgstr ""
+
 msgctxt "#32010"
 msgid "Customize"
 msgstr ""

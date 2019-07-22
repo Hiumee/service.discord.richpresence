@@ -4,7 +4,10 @@ import time
 
 from lib import discordpresence
 
-DISCORD_CLIENT_ID = '544620244014989312'
+DISCORD_CLIENT_ID = '0'
+CLIENT_ID = {
+            "0":'544620244014989312',
+            "1":'570950300446359552'}
 
 SUPPORTED_TYPES = ['episode', 'movie']
 SETT = ['state', 'details']
@@ -49,6 +52,15 @@ def base_activity():
     return activity
 
 def get_data():
+    client_id = xbmcaddon.Addon().getSetting('client_id')
+    if client_id!=DISCORD_CLIENT_ID:
+        global DISCORD_CLIENT_ID
+        DISCORD_CLIENT_ID = client_id
+        try:
+            ipc.close()
+        except:
+            pass
+
     data  = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetItem", "jsonrpc": "2.0", "method": "Player.GetItem", "id": 1, "params": {"playerid": 1, "properties": ["title", "season", "showtitle", "episode", "genre"]}}'))['result']
 
     act = base_activity()
@@ -104,7 +116,7 @@ monitor = xbmc.Monitor()
 
 while ipc == None and not monitor.abortRequested():
     try:
-        ipc = discordpresence.DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
+        ipc = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[DISCORD_CLIENT_ID])
         break
     except Exception as e:
         ipc = None
@@ -127,7 +139,7 @@ while ipc and not monitor.abortRequested():
         ipc = None
         while ipc == None and not monitor.abortRequested():
             try:
-                ipc = discordpresence.DiscordIpcClient.for_platform(DISCORD_CLIENT_ID)
+                ipc = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[DISCORD_CLIENT_ID])
                 xbmc.log("[Discord RP] Reconnected")
                 rpdata = get_data()
                 if rpdata:
