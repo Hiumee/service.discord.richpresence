@@ -9,8 +9,8 @@ CLIENT_ID = {
             "0":'544620244014989312',
             "1":'570950300446359552'}
 
-SUPPORTED_TYPES = ['episode', 'movie']
-SETT = ['state', 'details']
+SUPPORTED_TYPES = ['episode', 'movie', 'unknown']
+SETT = ['state', 'details', '']
 
 getsetting = {
                 'movie':   {
@@ -68,12 +68,16 @@ def get_data():
         data = data['item']
         data2 = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetProperties", "jsonrpc": "2.0", "method": "Player.GetProperties", "id": 1, "params": {"playerid": 1, "properties": ["speed", "time", "totaltime"]}}'))['result']
 
-        if data['type'] in SUPPORTED_TYPES:
+        xbmc.log("[Discord RP] "+str(data))
+        if data['type'] in SUPPORTED_TYPES or True: # TODO: Return to only supported types
 
             for pres in SETT:
-                setting = getsetting[data['type']][pres][xbmcaddon.Addon().getSetting(data['type']+'_'+pres)](data)
-                if setting:
-                    act[pres] = setting
+                try:
+                    setting = getsetting[data['type']][pres][xbmcaddon.Addon().getSetting(data['type']+'_'+pres)](data)
+                    if setting:
+                        act[pres] = setting
+                except:
+                    act['details'] = data['label']
 
             if data['type'] == 'episode':
                 act['assets']['large_text'] = data['showtitle']
@@ -81,6 +85,10 @@ def get_data():
                 
             elif data['type'] == 'movie':
                 act['assets']['large_text'] = data['title']
+                act['assets']['large_image'] = 'default'
+
+            else:
+                act['assets']['large_text'] = data['label'][:-4]
                 act['assets']['large_image'] = 'default'
 
             if data2['speed'] == 0:
