@@ -1,3 +1,5 @@
+# No longer maintained. It *should* not work properly
+
 # Kodi Addon - Discord Rich Presence
 
 ## Preview
