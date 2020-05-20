@@ -10,7 +10,7 @@ CLIENT_ID = {
             "1":'570950300446359552'}
 
 SUPPORTED_TYPES = ['episode', 'movie', 'unknown']
-SETT = ['state', 'details', '']
+SETT = ['state', 'details']
 
 getsetting = {
                 'movie':   {
@@ -29,12 +29,12 @@ getsetting = {
                 'episode': {
                     'state': {
                         "0": lambda data: '{}x{:02} {}'.format(data['season'],data['episode'],data['title']),
-                        "1": lambda data: data['showtitle'],
+                        "1": lambda data: data['show_title'],
                         "2": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
                         "3": lambda data: None
                     },
                     'details': {
-                        "0": lambda data: data['showtitle'],
+                        "0": lambda data: data['show_title'],
                         "1": lambda data: '{}x{:02} {}'.format(data['season'],data['episode'],data['title']),
                         "2": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
                         "3": lambda data: None
@@ -68,15 +68,15 @@ def get_data():
         data = data['item']
         data2 = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetProperties", "jsonrpc": "2.0", "method": "Player.GetProperties", "id": 1, "params": {"playerid": 1, "properties": ["speed", "time", "totaltime"]}}'))['result']
 
-        xbmc.log("[Discord RP] "+str(data))
         if data['type'] in SUPPORTED_TYPES or True: # TODO: Return to only supported types
 
             for pres in SETT:
                 try:
+
                     setting = getsetting[data['type']][pres][xbmcaddon.Addon().getSetting(data['type']+'_'+pres)](data)
                     if setting:
                         act[pres] = setting
-                except:
+                except Exception as e:
                     act['details'] = data['label']
 
             if data['type'] == 'episode':
@@ -97,7 +97,6 @@ def get_data():
                 #   xx:xx/xx:xx
                 #   xx:xx/xx:xx:xx
                 #   xx:xx:xx/xx:xx:xx
-                # If you watch something longer than 24h or shorter than one minute make it yourself
                 act['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(data2['time']['hours']) if data2['time']['hours']>0 else '',
                                                            data2['time']['minutes'],
                                                            data2['time']['seconds'],
