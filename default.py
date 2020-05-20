@@ -4,172 +4,250 @@ import time
 
 from lib import discordpresence
 
+def log(msg):
+    xbmc.log("[Discord RP] " + msg)
+
 DISCORD_CLIENT_ID = '0'
-CLIENT_ID = {
-            "0":'544620244014989312',
-            "1":'570950300446359552'}
+CLIENT_ID = ['544620244014989312',
+             '570950300446359552']
 
-SUPPORTED_TYPES = ['episode', 'movie', 'unknown']
-SETT = ['state', 'details', '']
 
-getsetting = {
-                'movie':   {
-                    'state': {
-                        "0": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
-                        "1": lambda data: data['title'],
-                        "2": lambda data: None
-                        },
-                    'details': {
-                        "0": lambda data: data['title'],
-                        "1": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
-                        "2": lambda data: None
-                    }
+class ServiceRichPresence:
+    def __init__(self):
+        self.presence = None
+        self.settings = {}
+        self.lastActivity = None
+        self.paused = True
 
-                },
-                'episode': {
-                    'state': {
-                        "0": lambda data: '{}x{:02} {}'.format(data['season'],data['episode'],data['title']),
-                        "1": lambda data: data['showtitle'],
-                        "2": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
-                        "3": lambda data: None
-                    },
-                    'details': {
-                        "0": lambda data: data['showtitle'],
-                        "1": lambda data: '{}x{:02} {}'.format(data['season'],data['episode'],data['title']),
-                        "2": lambda data: ''.join(i+', ' for i in data['genre'])[:-2],
-                        "3": lambda data: None
-                    }
+        self.updateSettings()
+        self.clientId = self.settings['client_id']
+        self.connectToDiscord()
+        self.updatePresence()
 
-                },
+    def setPauseState(self, state):
+        self.paused = state
 
-            }
+    def connectToDiscord(self):
+        while not self.presence:
+            try:
+                self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[self.clientId])
+            except Exception as e:
+                log("Could not connect to discord - "+str(e))
+                monitor.waitForAbort(30)
+                # update every 30s just in case
 
-def base_activity():
-    activity = {
-        'assets': {'large_image': 'default',
-                   'large_text': 'Kodi'},
-    }
-    return activity
+    def updateSettings(self):
+        self.settings = {}
+        self.settings['large_text'] = "Kodi"
 
-def get_data():
-    client_id = xbmcaddon.Addon().getSetting('client_id')
-    if client_id!=DISCORD_CLIENT_ID:
-        global DISCORD_CLIENT_ID
-        DISCORD_CLIENT_ID = client_id
-        try:
-            ipc.close()
-        except:
-            pass
+        addon = xbmcaddon.Addon()
+        
+        self.settings['episode_state'] = addon.getSettingInt('episode_state')
+        self.settings['episode_details'] = addon.getSettingInt('episode_details')
+        self.settings['movie_state'] = addon.getSettingInt('movie_state')
+        self.settings['movie_details'] = addon.getSettingInt('movie_details')
 
-    data  = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetItem", "jsonrpc": "2.0", "method": "Player.GetItem", "id": 1, "params": {"playerid": 1, "properties": ["title", "season", "showtitle", "episode", "genre"]}}'))['result']
+        self.settings['inmenu'] = addon.getSettingBool('inmenu')
+        self.settings['client_id'] = addon.getSettingInt('client_id')
 
-    act = base_activity()
-    if data:
-        data = data['item']
-        data2 = json.loads(xbmc.executeJSONRPC('{"command": "Player.GetProperties", "jsonrpc": "2.0", "method": "Player.GetProperties", "id": 1, "params": {"playerid": 1, "properties": ["speed", "time", "totaltime"]}}'))['result']
+        # get setting
+        log(str(self.settings))
 
-        xbmc.log("[Discord RP] "+str(data))
-        if data['type'] in SUPPORTED_TYPES or True: # TODO: Return to only supported types
+    def gatherData(self):
+        player = xbmc.Player()
+        if player.isPlayingVideo():
+            return player.getVideoInfoTag()
+            
+        return None
 
-            for pres in SETT:
-                try:
-                    setting = getsetting[data['type']][pres][xbmcaddon.Addon().getSetting(data['type']+'_'+pres)](data)
-                    if setting:
-                        act[pres] = setting
-                except:
-                    act['details'] = data['label']
+    def craftNoVideoState(self, data):
+        if self.settings['inmenu']:
+            activity = {'assets' : {'large_image' : 'default',
+                                  'large_text' : self.settings['large_text']},
+                        'state' : (self.settings['inmenu'] and 'In menu' or '')
+                        }
+            return activity
+        else:
+            return None
 
-            if data['type'] == 'episode':
-                act['assets']['large_text'] = data['showtitle']
-                act['assets']['large_image'] = 'default'
-                
-            elif data['type'] == 'movie':
-                act['assets']['large_text'] = data['title']
-                act['assets']['large_image'] = 'default'
+    def getEpisodeState(self, data):
+        if self.settings['episode_state'] == 0:
+            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),data.getTitle())
+        if self.settings['episode_state'] == 1:
+            return data.getTVShowTitle()
+        if self.settings['episode_state'] == 2:
+            return data.getGenre()
+        return None
 
-            else:
-                act['assets']['large_text'] = data['label'][:-4]
-                act['assets']['large_image'] = 'default'
+    def getEpisodeDetails(self, data):
+        if self.settings['episode_details'] == 0:
+            return data.getTVShowTitle()
+        if self.settings['episode_details'] == 1:
+            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),data.getTitle())
+        if self.settings['episode_details'] == 2:
+            return data.getGenre()
+        return None
 
-            if data2['speed'] == 0:
-                act['assets']['small_image'] = 'paused'
+    def craftEpisodeState(self, data):
+        activity = {}
+        activity['assets'] = {'large_image' : 'default',
+                              'large_text' : data.getTVShowTitle()}
+
+        state = self.getEpisodeState(data)
+        if state:
+            activity['state'] = state
+
+        details = self.getEpisodeDetails(data)
+        if details:
+            activity['details'] = details
+        return activity
+
+    def getMovieState(self, data):
+        if self.settings['movie_state'] == 0:
+            return data.getGenre()
+        if self.settings['movie_state'] == 1:
+            return data.getTitle()
+        return None
+
+    def getMovieDetails(self, data):
+        if self.settings['movie_details'] == 0:
+            return data.getTitle()
+        if self.settings['movie_details'] == 1:
+            return data.getGenre()
+        return None
+
+    def craftMovieState(self, data):
+        activity = {}
+        activity['assets'] = {'large_image' : 'default',
+                              'large_text' : data.getTitle()}
+
+        state = self.getMovieState(data)
+        if state:
+            activity['state'] = state
+
+        details = self.getMovieDetails(data)
+        if details:
+            activity['details'] = details 
+        return activity
+
+    def mainLoop(self):
+        while not monitor.abortRequested():
+            if monitor.waitForAbort(5):
+                log("Abort called. Exiting...")
+                break
+            self.updatePresence()
+
+    def updatePresence(self):
+        data = self.gatherData()
+
+        activity = None
+        #activity['assets'] = {'large_image' : 'default',
+        #                        'large_text' : self.settings['large_text']}
+
+        if not data:
+            # no video playing
+            log("Setting default")
+            if self.settings['inmenu']:
+                activity = self.craftNoVideoState(data)
+        else:
+            if data.getMediaType() == 'episode':
+                activity = self.craftEpisodeState(data)
+            elif data.getMediaType() == 'movie':
+                activity = self.craftMovieState(data)
+
+            if self.paused:
+                activity['assets']['small_image'] = 'paused'
                 # Works for
                 #   xx:xx/xx:xx
                 #   xx:xx/xx:xx:xx
                 #   xx:xx:xx/xx:xx:xx
-                # If you watch something longer than 24h or shorter than one minute make it yourself
-                act['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(data2['time']['hours']) if data2['time']['hours']>0 else '',
-                                                           data2['time']['minutes'],
-                                                           data2['time']['seconds'],
-                                                           '{}:'.format(data2['totaltime']['hours']) if data2['totaltime']['hours']>0 else '',
-                                                           data2['totaltime']['minutes'],
-                                                           data2['totaltime']['seconds']
+                currentTime = player.getTime()
+                hours = int(currentTime/3600)
+                minutes = int(currentTime/60) - hours*60
+                seconds = int(currentTime) - minutes*60 - hours*3600
+
+                fullTime = player.getTotalTime()
+                fhours = int(fullTime/3600)
+                fminutes = int(fullTime/60) - fhours*60
+                fseconds = int(fullTime) - fminutes*60 - fhours*3600
+                activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
+                                                           minutes,
+                                                           seconds,
+                                                           '{}:'.format(fhours) if fhours>0 else '',
+                                                           fminutes,
+                                                           fseconds
                             )
+
             else:
-                currenttime = data2['time']['hours'] * 3600 + data2['time']['minutes'] * 60 + data2['time']['seconds']
-                fulltime = data2['totaltime']['hours'] * 3600 + data2['totaltime']['minutes'] * 60 + data2['totaltime']['seconds']
-                remainingtime = fulltime - currenttime
-                remainingtime /= data2['speed']
-                act['timestamps'] = {}
-                act['timestamps']['end'] =  int(time.time() + remainingtime)
-            return act
+                currentTime = player.getTime()
+                fullTime = player.getTotalTime()
+                remainingTime = fullTime - currentTime
+                activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
 
-    if xbmcaddon.Addon().getSetting('inmenu') == 'false':
-        return False
-    act['state'] = "In menu"
-    return act
 
-ipc = None
-monitor = xbmc.Monitor()
-
-while ipc == None and not monitor.abortRequested():
-    try:
-        ipc = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[DISCORD_CLIENT_ID])
-        break
-    except Exception as e:
-        ipc = None
-        xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
-        xbmc.log("[Discord RP] [Error] "+str(e))
-    if monitor.waitForAbort(15):
-        ipc = None
-        break
-
-while ipc and not monitor.abortRequested():
-    try:
-        rpdata = get_data()
-        if rpdata:
-            ipc.set_activity(rpdata)
-        else:
-            ipc.clear_activity()
-        xbmc.log("[Discord RP] Updated")
-    except:
-        xbmc.log("[Discord RP] Discord disconnected")
-        ipc = None
-        while ipc == None and not monitor.abortRequested():
-            try:
-                ipc = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[DISCORD_CLIENT_ID])
-                xbmc.log("[Discord RP] Reconnected")
-                rpdata = get_data()
-                if rpdata:
-                    ipc.set_activity(rpdata)
+        if activity != self.lastActivity:
+            self.lastActivity = activity
+            if activity == None:
+                self.presence.clear_activity()
+            else:
+                if self.settings['client_id'] != self.clientId:
+                    self.clientId = self.settings['client_id']
+                    self.presence.close()
+                    self.presence = None
+                    self.connectToDiscord()
+                    self.updatePresence()
                 else:
-                    ipc.clear_activity()
-                xbmc.log("[Discord RP] Updated")
-                break
-            except Exception as e:
-                ipc = None
-                xbmc.log("[Discord RP] Could not connect to Discord. Retry in 15s")
-                xbmc.log("[Discord RP] [Error] "+str(e))
-            if monitor.waitForAbort(15):
-                xbmc.log("[Discord RP] Abort")
-                ipc = None
-                break
-    if monitor.waitForAbort(15):
-        xbmc.log("[Discord RP] Abort")
-        break
+                    log("Activity set: " + str(activity))
+                    self.presence.set_activity(activity)
 
 
-xbmc.log("[Discord RP] Exiting...")
-if ipc:
-    ipc.clear_activity()
-    ipc.close()
+class MyPlayer(xbmc.Player):
+    def __init__(self):
+        xbmc.Player.__init__(self)
+
+    def onPlayBackPaused(self):
+        drp.setPauseState(True)
+        drp.updatePresence()
+
+    def onPlayBackEnded(seld):
+        drp.setPauseState(True)
+        drp.updatePresence()
+
+    def onPlayBackResumed(self):
+        drp.setPauseState(False)
+        drp.updatePresence()
+
+    def onPlayBackError(self):
+        drp.setPauseState(True)
+        drp.updatePresence()
+
+    def onPlayBackSeek(self, *args):
+        drp.updatePresence()
+
+    def onPlayBackSeekChapter(self, *args):
+        drp.updatePresence()
+
+    def onPlayBackStarted(self):
+        drp.setPauseState(False)
+        # media might not be loaded
+        drp.updatePresence()
+
+    def onPlayBackStopped(self):
+        drp.setPauseState(True)
+        drp.updatePresence()
+
+
+class MyMonitor(xbmc.Monitor):
+    def __init__(self):
+        xbmc.Monitor.__init__(self)
+        log("Monitor initialized")
+
+    def onSettingsChanged(self):
+        drp.updateSettings()
+        drp.updatePresence()
+
+monitor = MyMonitor()
+player = MyPlayer()
+
+drp = ServiceRichPresence()
+drp.mainLoop()
