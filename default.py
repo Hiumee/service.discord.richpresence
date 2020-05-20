@@ -136,6 +136,8 @@ class ServiceRichPresence:
                 log("Abort called. Exiting...")
                 break
             self.updatePresence()
+        if self.presence:
+            self.presence.close()
 
     def updatePresence(self):
         data = self.gatherData()
