@@ -17,11 +17,11 @@ Media types:
 
 Features:
 - [x] Display what is playing
-- [/] Allow user to edit what is displayed and where (partialy done)
+- [ ] Allow user to edit what is displayed and where (partialy done)
 - [ ] Image updating depending on media
 
 ## Download and Installation
-Download link: [Download](https://github.com/Hiumee/service.discord.richpresence/releases/download/v1.2.0/service.discord.richpresence.v1.2.0.zip)
+Download link: [Download](https://github.com/Hiumee/service.discord.richpresence/releases/download/v1.2.1/service.discord.richpresence.v1.2.1.zip)
 
 To install you have to go into Kodi Setting > Addons > Install from zip file (allow unknown sources) > Open the downloaded file
 

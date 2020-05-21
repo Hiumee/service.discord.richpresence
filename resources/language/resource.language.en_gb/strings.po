@@ -35,7 +35,7 @@ msgid "Movie"
 msgstr ""
 
 msgctxt "#32012"
-msgid "State"
+msgid "Bottom text"
 msgstr ""
 
 msgctxt "#32013"
@@ -51,7 +51,7 @@ msgid "None"
 msgstr ""
 
 msgctxt "#32016"
-msgid "Details"
+msgid "Top text"
 msgstr ""
 
 msgctxt "#32020"
