@@ -34,6 +34,9 @@ class ServiceRichPresence:
                 monitor.waitForAbort(30)
                 # update every 30s just in case
 
+        self.lastActivity = None
+        self.updatePresence()
+
     def updateSettings(self):
         self.settings = {}
         self.settings['large_text'] = "Kodi"
@@ -139,67 +142,68 @@ class ServiceRichPresence:
 
     def updatePresence(self):
         try:
-            data = self.gatherData()
+            if self.presence:
+                data = self.gatherData()
 
-            activity = None
-            #activity['assets'] = {'large_image' : 'default',
-            #                        'large_text' : self.settings['large_text']}
+                activity = None
+                #activity['assets'] = {'large_image' : 'default',
+                #                        'large_text' : self.settings['large_text']}
 
-            if not data:
-                # no video playing
-                log("Setting default")
-                if self.settings['inmenu']:
-                    activity = self.craftNoVideoState(data)
-            else:
-                if data.getMediaType() == 'episode':
-                    activity = self.craftEpisodeState(data)
-                elif data.getMediaType() == 'movie':
-                    activity = self.craftMovieState(data)
-
-                if self.paused:
-                    activity['assets']['small_image'] = 'paused'
-                    # Works for
-                    #   xx:xx/xx:xx
-                    #   xx:xx/xx:xx:xx
-                    #   xx:xx:xx/xx:xx:xx
-                    currentTime = player.getTime()
-                    hours = int(currentTime/3600)
-                    minutes = int(currentTime/60) - hours*60
-                    seconds = int(currentTime) - minutes*60 - hours*3600
-
-                    fullTime = player.getTotalTime()
-                    fhours = int(fullTime/3600)
-                    fminutes = int(fullTime/60) - fhours*60
-                    fseconds = int(fullTime) - fminutes*60 - fhours*3600
-                    activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
-                                                               minutes,
-                                                               seconds,
-                                                               '{}:'.format(fhours) if fhours>0 else '',
-                                                               fminutes,
-                                                               fseconds
-                                )
-
+                if not data:
+                    # no video playing
+                    log("Setting default")
+                    if self.settings['inmenu']:
+                        activity = self.craftNoVideoState(data)
                 else:
-                    currentTime = player.getTime()
-                    fullTime = player.getTotalTime()
-                    remainingTime = fullTime - currentTime
-                    activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+                    if data.getMediaType() == 'episode':
+                        activity = self.craftEpisodeState(data)
+                    elif data.getMediaType() == 'movie':
+                        activity = self.craftMovieState(data)
 
+                    if self.paused:
+                        activity['assets']['small_image'] = 'paused'
+                        # Works for
+                        #   xx:xx/xx:xx
+                        #   xx:xx/xx:xx:xx
+                        #   xx:xx:xx/xx:xx:xx
+                        currentTime = player.getTime()
+                        hours = int(currentTime/3600)
+                        minutes = int(currentTime/60) - hours*60
+                        seconds = int(currentTime) - minutes*60 - hours*3600
 
-            if activity != self.lastActivity:
-                self.lastActivity = activity
-                if activity == None:
-                    self.presence.clear_activity()
-                else:
-                    if self.settings['client_id'] != self.clientId:
-                        self.clientId = self.settings['client_id']
-                        self.presence.close()
-                        self.presence = None
-                        self.connectToDiscord()
-                        self.updatePresence()
+                        fullTime = player.getTotalTime()
+                        fhours = int(fullTime/3600)
+                        fminutes = int(fullTime/60) - fhours*60
+                        fseconds = int(fullTime) - fminutes*60 - fhours*3600
+                        activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
+                                                                   minutes,
+                                                                   seconds,
+                                                                   '{}:'.format(fhours) if fhours>0 else '',
+                                                                   fminutes,
+                                                                   fseconds
+                                    )
+
                     else:
-                        log("Activity set: " + str(activity))
-                        self.presence.set_activity(activity)
+                        currentTime = player.getTime()
+                        fullTime = player.getTotalTime()
+                        remainingTime = fullTime - currentTime
+                        activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+
+
+                if activity != self.lastActivity:
+                    self.lastActivity = activity
+                    if activity == None:
+                        self.presence.clear_activity()
+                    else:
+                        if self.settings['client_id'] != self.clientId:
+                            self.clientId = self.settings['client_id']
+                            self.presence.close()
+                            self.presence = None
+                            self.connectToDiscord()
+                            self.updatePresence()
+                        else:
+                            log("Activity set: " + str(activity))
+                            self.presence.set_activity(activity)
         except Exception as e:
             # shitty way to make sure it runs forever
             log("Exception caught: " + str(e))
