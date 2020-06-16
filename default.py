@@ -31,8 +31,8 @@ class ServiceRichPresence:
                 self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[self.clientId])
             except Exception as e:
                 log("Could not connect to discord: "+str(e))
-                monitor.waitForAbort(30)
-                # update every 30s just in case
+                monitor.waitForAbort(5)
+                # update every 5s just in case
 
         self.lastActivity = None
         self.updatePresence()
