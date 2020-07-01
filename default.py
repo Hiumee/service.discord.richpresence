@@ -131,6 +131,16 @@ class ServiceRichPresence:
             activity['details'] = details 
         return activity
 
+    def craftVideoState(self, data):
+        activity = {}
+        activity['assets'] = {'large_image' : 'default',
+                              'large_text' : data.getTagLine()}
+
+        details = data.getTagLine()
+        if details:
+            activity['details'] = details 
+        return activity
+
     def mainLoop(self):
         while not monitor.abortRequested():
             if monitor.waitForAbort(5):
@@ -159,35 +169,40 @@ class ServiceRichPresence:
                         activity = self.craftEpisodeState(data)
                     elif data.getMediaType() == 'movie':
                         activity = self.craftMovieState(data)
-
-                    if self.paused:
-                        activity['assets']['small_image'] = 'paused'
-                        # Works for
-                        #   xx:xx/xx:xx
-                        #   xx:xx/xx:xx:xx
-                        #   xx:xx:xx/xx:xx:xx
-                        currentTime = player.getTime()
-                        hours = int(currentTime/3600)
-                        minutes = int(currentTime/60) - hours*60
-                        seconds = int(currentTime) - minutes*60 - hours*3600
-
-                        fullTime = player.getTotalTime()
-                        fhours = int(fullTime/3600)
-                        fminutes = int(fullTime/60) - fhours*60
-                        fseconds = int(fullTime) - fminutes*60 - fhours*3600
-                        activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
-                                                                   minutes,
-                                                                   seconds,
-                                                                   '{}:'.format(fhours) if fhours>0 else '',
-                                                                   fminutes,
-                                                                   fseconds
-                                    )
-
+                    elif data.getMediaType() == 'video':
+                        activity = self.craftVideoState(data)
                     else:
-                        currentTime = player.getTime()
-                        fullTime = player.getTotalTime()
-                        remainingTime = fullTime - currentTime
-                        activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+                        log("Unsupported media type: "+str(data.getMediaType()))
+
+                    if data.getMediaType() != 'video':
+                        if self.paused:
+                            activity['assets']['small_image'] = 'paused'
+                            # Works for
+                            #   xx:xx/xx:xx
+                            #   xx:xx/xx:xx:xx
+                            #   xx:xx:xx/xx:xx:xx
+                            currentTime = player.getTime()
+                            hours = int(currentTime/3600)
+                            minutes = int(currentTime/60) - hours*60
+                            seconds = int(currentTime) - minutes*60 - hours*3600
+
+                            fullTime = player.getTotalTime()
+                            fhours = int(fullTime/3600)
+                            fminutes = int(fullTime/60) - fhours*60
+                            fseconds = int(fullTime) - fminutes*60 - fhours*3600
+                            activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
+                                                                       minutes,
+                                                                       seconds,
+                                                                       '{}:'.format(fhours) if fhours>0 else '',
+                                                                       fminutes,
+                                                                       fseconds
+                                        )
+
+                        else:
+                            currentTime = player.getTime()
+                            fullTime = player.getTotalTime()
+                            remainingTime = fullTime - currentTime
+                            activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
 
 
                 if activity != self.lastActivity:
@@ -214,6 +229,12 @@ class MyPlayer(xbmc.Player):
 
     def onPlayBackPaused(self):
         drp.setPauseState(True)
+        drp.updatePresence()
+
+    def onAVChange(self):
+        drp.updatePresence()
+
+    def onAVStarted(self):
         drp.updatePresence()
 
     def onPlayBackEnded(seld):
