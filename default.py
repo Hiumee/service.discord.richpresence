@@ -174,35 +174,34 @@ class ServiceRichPresence:
                     else:
                         log("Unsupported media type: "+str(data.getMediaType()))
 
-                    if data.getMediaType() != 'video':
-                        if self.paused:
-                            activity['assets']['small_image'] = 'paused'
-                            # Works for
-                            #   xx:xx/xx:xx
-                            #   xx:xx/xx:xx:xx
-                            #   xx:xx:xx/xx:xx:xx
-                            currentTime = player.getTime()
-                            hours = int(currentTime/3600)
-                            minutes = int(currentTime/60) - hours*60
-                            seconds = int(currentTime) - minutes*60 - hours*3600
+                    if self.paused:
+                        activity['assets']['small_image'] = 'paused'
+                        # Works for
+                        #   xx:xx/xx:xx
+                        #   xx:xx/xx:xx:xx
+                        #   xx:xx:xx/xx:xx:xx
+                        currentTime = player.getTime()
+                        hours = int(currentTime/3600)
+                        minutes = int(currentTime/60) - hours*60
+                        seconds = int(currentTime) - minutes*60 - hours*3600
 
-                            fullTime = player.getTotalTime()
-                            fhours = int(fullTime/3600)
-                            fminutes = int(fullTime/60) - fhours*60
-                            fseconds = int(fullTime) - fminutes*60 - fhours*3600
-                            activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
-                                                                       minutes,
-                                                                       seconds,
-                                                                       '{}:'.format(fhours) if fhours>0 else '',
-                                                                       fminutes,
-                                                                       fseconds
-                                        )
+                        fullTime = player.getTotalTime()
+                        fhours = int(fullTime/3600)
+                        fminutes = int(fullTime/60) - fhours*60
+                        fseconds = int(fullTime) - fminutes*60 - fhours*3600
+                        activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
+                                                                   minutes,
+                                                                   seconds,
+                                                                   '{}:'.format(fhours) if fhours>0 else '',
+                                                                   fminutes,
+                                                                   fseconds
+                                    )
 
-                        else:
-                            currentTime = player.getTime()
-                            fullTime = player.getTotalTime()
-                            remainingTime = fullTime - currentTime
-                            activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+                    else:
+                        currentTime = player.getTime()
+                        fullTime = player.getTotalTime()
+                        remainingTime = fullTime - currentTime
+                        activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
 
 
                 if activity != self.lastActivity:
