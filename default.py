@@ -18,6 +18,7 @@ class ServiceRichPresence:
         self.settings = {}
         self.lastActivity = None
         self.paused = True
+        self.connected = False
 
         self.updateSettings()
         self.clientId = self.settings['client_id']
@@ -26,14 +27,17 @@ class ServiceRichPresence:
         self.paused = state
 
     def connectToDiscord(self):
+        self.connected = False
         while not self.presence:
             try:
                 self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[self.clientId])
             except Exception as e:
                 log("Could not connect to discord: "+str(e))
+                self.presence = None
                 monitor.waitForAbort(5)
                 # update every 5s just in case
 
+        self.connected = True
         self.lastActivity = None
         self.updatePresence()
 
@@ -147,80 +151,83 @@ class ServiceRichPresence:
                 log("Abort called. Exiting...")
                 break
             self.updatePresence()
-        if self.presence:
+        if self.connected:
             self.presence.close()
 
     def updatePresence(self):
-        try:
-            if self.presence:
-                data = self.gatherData()
+        if self.connected:
+            data = self.gatherData()
 
-                activity = None
-                #activity['assets'] = {'large_image' : 'default',
-                #                        'large_text' : self.settings['large_text']}
+            activity = None
+            #activity['assets'] = {'large_image' : 'default',
+            #                        'large_text' : self.settings['large_text']}
 
-                if not data:
-                    # no video playing
-                    log("Setting default")
-                    if self.settings['inmenu']:
-                        activity = self.craftNoVideoState(data)
+            if not data:
+                # no video playing
+                log("Setting default")
+                if self.settings['inmenu']:
+                    activity = self.craftNoVideoState(data)
+            else:
+                if data.getMediaType() == 'episode':
+                    activity = self.craftEpisodeState(data)
+                elif data.getMediaType() == 'movie':
+                    activity = self.craftMovieState(data)
+                elif data.getMediaType() == 'video':
+                    activity = self.craftVideoState(data)
                 else:
-                    if data.getMediaType() == 'episode':
-                        activity = self.craftEpisodeState(data)
-                    elif data.getMediaType() == 'movie':
-                        activity = self.craftMovieState(data)
-                    elif data.getMediaType() == 'video':
-                        activity = self.craftVideoState(data)
+                    log("Unsupported media type: "+str(data.getMediaType()))
+
+                if self.paused:
+                    activity['assets']['small_image'] = 'paused'
+                    # Works for
+                    #   xx:xx/xx:xx
+                    #   xx:xx/xx:xx:xx
+                    #   xx:xx:xx/xx:xx:xx
+                    currentTime = player.getTime()
+                    hours = int(currentTime/3600)
+                    minutes = int(currentTime/60) - hours*60
+                    seconds = int(currentTime) - minutes*60 - hours*3600
+
+                    fullTime = player.getTotalTime()
+                    fhours = int(fullTime/3600)
+                    fminutes = int(fullTime/60) - fhours*60
+                    fseconds = int(fullTime) - fminutes*60 - fhours*3600
+                    activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
+                                                               minutes,
+                                                               seconds,
+                                                               '{}:'.format(fhours) if fhours>0 else '',
+                                                               fminutes,
+                                                               fseconds
+                                )
+
+                else:
+                    currentTime = player.getTime()
+                    fullTime = player.getTotalTime()
+                    remainingTime = fullTime - currentTime
+                    activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+
+
+            if activity != self.lastActivity:
+                self.lastActivity = activity
+                if activity == None:
+                    self.presence.clear_activity()
+                else:
+                    if self.settings['client_id'] != self.clientId:
+                        self.clientId = self.settings['client_id']
+                        self.presence.close()
+                        self.presence = None
+                        self.connected = False
+                        self.connectToDiscord()
+                        self.updatePresence()
                     else:
-                        log("Unsupported media type: "+str(data.getMediaType()))
-
-                    if self.paused:
-                        activity['assets']['small_image'] = 'paused'
-                        # Works for
-                        #   xx:xx/xx:xx
-                        #   xx:xx/xx:xx:xx
-                        #   xx:xx:xx/xx:xx:xx
-                        currentTime = player.getTime()
-                        hours = int(currentTime/3600)
-                        minutes = int(currentTime/60) - hours*60
-                        seconds = int(currentTime) - minutes*60 - hours*3600
-
-                        fullTime = player.getTotalTime()
-                        fhours = int(fullTime/3600)
-                        fminutes = int(fullTime/60) - fhours*60
-                        fseconds = int(fullTime) - fminutes*60 - fhours*3600
-                        activity['assets']['small_text'] = "{}{:02}:{:02}/{}{:02}:{:02}".format('{}:'.format(hours) if hours>0 else '',
-                                                                   minutes,
-                                                                   seconds,
-                                                                   '{}:'.format(fhours) if fhours>0 else '',
-                                                                   fminutes,
-                                                                   fseconds
-                                    )
-
-                    else:
-                        currentTime = player.getTime()
-                        fullTime = player.getTotalTime()
-                        remainingTime = fullTime - currentTime
-                        activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
-
-
-                if activity != self.lastActivity:
-                    self.lastActivity = activity
-                    if activity == None:
-                        self.presence.clear_activity()
-                    else:
-                        if self.settings['client_id'] != self.clientId:
-                            self.clientId = self.settings['client_id']
-                            self.presence.close()
-                            self.presence = None
-                            self.connectToDiscord()
-                            self.updatePresence()
-                        else:
-                            log("Activity set: " + str(activity))
+                        log("Activity set: " + str(activity))
+                        try:
                             self.presence.set_activity(activity)
-        except Exception as e:
-            # shitty way to make sure it runs forever
-            log("Exception caught: " + str(e))
+                        except IOError:
+                            log("Activity set failed. Reconnecting to Discord")
+                            self.connected = False
+                            self.connectToDiscord()
+                            self.presence.set_activity(activity)
 
 class MyPlayer(xbmc.Player):
     def __init__(self):
@@ -234,6 +241,7 @@ class MyPlayer(xbmc.Player):
         drp.updatePresence()
 
     def onAVStarted(self):
+        drp.setPauseState(False)
         drp.updatePresence()
 
     def onPlayBackEnded(seld):
