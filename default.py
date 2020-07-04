@@ -28,6 +28,7 @@ class ServiceRichPresence:
 
     def connectToDiscord(self):
         self.connected = False
+        self.presence = None
         while not self.presence:
             try:
                 self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[self.clientId])
@@ -39,7 +40,11 @@ class ServiceRichPresence:
 
         self.connected = True
         self.lastActivity = None
-        self.updatePresence()
+        try:
+            self.updatePresence()
+        except Exception as e:
+            log("Error while updating: " + str(e))
+
 
     def updateSettings(self):
         self.settings = {}
@@ -148,9 +153,9 @@ class ServiceRichPresence:
     def mainLoop(self):
         while not monitor.abortRequested():
             if monitor.waitForAbort(5):
-                log("Abort called. Exiting...")
                 break
             self.updatePresence()
+        log("Abort called. Exiting...")
         if self.connected:
             self.presence.close()
 
@@ -206,11 +211,13 @@ class ServiceRichPresence:
                     remainingTime = fullTime - currentTime
                     activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
 
-
             if activity != self.lastActivity:
                 self.lastActivity = activity
                 if activity == None:
-                    self.presence.clear_activity()
+                    try:
+                        self.presence.clear_activity()
+                    except Exception as e:
+                        log("Error while clearing: " + str(e))
                 else:
                     if self.settings['client_id'] != self.clientId:
                         self.clientId = self.settings['client_id']
@@ -223,8 +230,8 @@ class ServiceRichPresence:
                         log("Activity set: " + str(activity))
                         try:
                             self.presence.set_activity(activity)
-                        except IOError:
-                            log("Activity set failed. Reconnecting to Discord")
+                        except IOError as e:
+                            log("Activity set failed. Reconnecting to Discord. Error: "+str(e))
                             self.connected = False
                             self.connectToDiscord()
                             self.presence.set_activity(activity)
