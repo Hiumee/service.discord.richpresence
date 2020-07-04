@@ -157,7 +157,11 @@ class ServiceRichPresence:
             self.updatePresence()
         log("Abort called. Exiting...")
         if self.connected:
-            self.presence.close()
+            try:
+                self.presence.close()
+            except IOError as e:
+                self.connected = False
+                log("Error closing connection: " + str(e))
 
     def updatePresence(self):
         if self.connected:
@@ -230,8 +234,8 @@ class ServiceRichPresence:
                         log("Activity set: " + str(activity))
                         try:
                             self.presence.set_activity(activity)
-                        except IOError as e:
-                            log("Activity set failed. Reconnecting to Discord. Error: "+str(e))
+                        except IOError:
+                            log("Activity set failed. Reconnecting to Discord")
                             self.connected = False
                             self.connectToDiscord()
                             self.presence.set_activity(activity)
