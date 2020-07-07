@@ -143,16 +143,16 @@ class ServiceRichPresence:
     def craftVideoState(self, data):
         activity = {}
         activity['assets'] = {'large_image' : 'default',
-                              'large_text' : data.getTagLine()}
+                              'large_text' : data.getTitle() or data.getTagLine() or data.getFile()}
 
-        details = data.getTagLine()
-        if details:
-            activity['details'] = details 
+        activity['details'] = data.getTitle() or data.getTagLine() or data.getFile()
+
         return activity
 
     def mainLoop(self):
-        while not monitor.abortRequested():
-            if monitor.waitForAbort(5):
+        while True:
+            monitor.waitForAbort(5)
+            if monitor.abortRequested():
                 break
             self.updatePresence()
         log("Abort called. Exiting...")
@@ -184,7 +184,9 @@ class ServiceRichPresence:
                 elif data.getMediaType() == 'video':
                     activity = self.craftVideoState(data)
                 else:
+                    activity = self.craftVideoState(data)
                     log("Unsupported media type: "+str(data.getMediaType()))
+                    log("Using workaround")
 
                 if self.paused:
                     activity['assets']['small_image'] = 'paused'
