@@ -1,6 +1,7 @@
 import xbmc, xbmcaddon
 import json
 import time
+import re
 
 from lib import discordpresence
 
@@ -10,6 +11,26 @@ def log(msg):
 DISCORD_CLIENT_ID = '0'
 CLIENT_ID = ['544620244014989312',
              '570950300446359552']
+
+
+def removeKodiTags(text):
+    log("Removing tags for: " + text)
+
+    validTags = ["I", "B", "LIGHT", "UPPERCASE", "LOWERCASE", "CAPITALIZE", "COLOR"]
+    
+    for tag in validTags:
+        r = re.compile("\[\s*/?\s*"+tag+"\s*?\]")
+        text = r.sub("", text)
+
+    r = re.compile("\[\s*/?\s*CR\s*?\]")
+    text = r.sub(" ", text)
+
+    r = re.compile("\[\s*/?\s*COLOR\s*?.*?\]")
+    text = r.sub("", text)
+
+    log("Removed tags. Result: " + text)
+
+    return text
 
 
 class ServiceRichPresence:
@@ -142,10 +163,14 @@ class ServiceRichPresence:
 
     def craftVideoState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : 'default',
-                              'large_text' : data.getTitle() or data.getTagLine() or data.getFile()}
 
-        activity['details'] = data.getTitle() or data.getTagLine() or data.getFile()
+        title = data.getTitle() or data.getTagLine() or data.getFile()
+        title = removeKodiTags(title)
+
+        activity['assets'] = {'large_image' : 'default',
+                              'large_text' : title }
+
+        activity['details'] = title
 
         return activity
 
