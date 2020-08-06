@@ -103,7 +103,7 @@ class ServiceRichPresence:
 
     def getEpisodeState(self, data):
         if self.settings['episode_state'] == 0:
-            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),data.getTitle())
+            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),removeKodiTags(data.getTitle()))
         if self.settings['episode_state'] == 1:
             return data.getTVShowTitle()
         if self.settings['episode_state'] == 2:
@@ -114,7 +114,7 @@ class ServiceRichPresence:
         if self.settings['episode_details'] == 0:
             return data.getTVShowTitle()
         if self.settings['episode_details'] == 1:
-            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),data.getTitle())
+            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),removeKodiTags(data.getTitle()))
         if self.settings['episode_details'] == 2:
             return data.getGenre()
         return None
@@ -137,12 +137,12 @@ class ServiceRichPresence:
         if self.settings['movie_state'] == 0:
             return data.getGenre()
         if self.settings['movie_state'] == 1:
-            return data.getTitle()
+            return removeKodiTags(data.getTitle())
         return None
 
     def getMovieDetails(self, data):
         if self.settings['movie_details'] == 0:
-            return data.getTitle()
+            return removeKodiTags(data.getTitle())
         if self.settings['movie_details'] == 1:
             return data.getGenre()
         return None
@@ -150,7 +150,7 @@ class ServiceRichPresence:
     def craftMovieState(self, data):
         activity = {}
         activity['assets'] = {'large_image' : 'default',
-                              'large_text' : data.getTitle()}
+                              'large_text' : removeKodiTags(data.getTitle())}
 
         state = self.getMovieState(data)
         if state:
