@@ -21,9 +21,14 @@ Features:
 - [ ] Image updating depending on media
 
 ## Download and Installation
-Download link: [Download](https://github.com/Hiumee/service.discord.richpresence/releases/download/v1.2.8/service.discord.richpresence.v1.2.8.zip)
+
+Get the repository: [Download](https://github.com/Hiumee/kodi-repository/blob/main/zips/repository.hiumee/repository.hiumee-1.0.zip?raw=true)
 
 To install you have to go into Kodi Setting > Addons > Install from zip file (allow unknown sources) > Open the downloaded file
+
+Then go to Addons > Install from repository > Hiumee's Repository > Services > Discord Rich Presence
+
+The updates will be downloaded automatically
 
 ## Bug submitting and features
 You can open an issue or message me on Discord (Hiumee#6784)
