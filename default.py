@@ -2,6 +2,7 @@ import xbmc, xbmcaddon
 import json
 import time
 import re
+import requests
 
 from lib import discordpresence
 
@@ -11,6 +12,12 @@ def log(msg):
 DISCORD_CLIENT_ID = '0'
 CLIENT_ID = ['544620244014989312',
              '570950300446359552']
+
+
+def getShowImage(showTitle):
+    if showTitle in AVAIABLE_IMAGES:
+        return AVAIABLE_IMAGES[showTitle]
+    return "default"
 
 
 def removeKodiTags(text):
@@ -121,7 +128,7 @@ class ServiceRichPresence:
 
     def craftEpisodeState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : 'default',
+        activity['assets'] = {'large_image' : getShowImage(data.getTVShowTitle()),
                               'large_text' : data.getTVShowTitle()}
 
         state = self.getEpisodeState(data)
@@ -318,6 +325,8 @@ class MyMonitor(xbmc.Monitor):
     def onSettingsChanged(self):
         drp.updateSettings()
         drp.updatePresence()
+
+AVAIABLE_IMAGES = json.loads(requests.get("https://hiumee.github.io/kodi/custom.json").text)
 
 monitor = MyMonitor()
 player = MyPlayer()
