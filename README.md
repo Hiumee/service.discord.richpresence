@@ -32,3 +32,6 @@ The updates will be downloaded automatically
 
 ## Bug submitting and features
 You can open an issue or message me on Discord (Hiumee#6784)
+
+If you want to support me
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/hiumee)
