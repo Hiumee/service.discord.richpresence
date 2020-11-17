@@ -326,7 +326,12 @@ class MyMonitor(xbmc.Monitor):
         drp.updateSettings()
         drp.updatePresence()
 
-AVAIABLE_IMAGES = json.loads(requests.get("https://hiumee.github.io/kodi/custom.json").text)
+AVAIABLE_IMAGES = []
+
+try:
+    AVAIABLE_IMAGES = json.loads(requests.get("https://hiumee.github.io/kodi/custom.json").text)
+except Exception:
+    pass
 
 monitor = MyMonitor()
 player = MyPlayer()
