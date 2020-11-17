@@ -22,7 +22,7 @@ Features:
 
 ## Download and Installation
 
-Get the repository: [Download](https://github.com/Hiumee/kodi-repository/blob/main/zips/repository.hiumee/repository.hiumee-1.0.zip?raw=true)
+Get the repository: [Download](https://github.com/Hiumee/kodi-repository/raw/main/zips/repository.hiumee/repository.hiumee-1.0.2.zip)
 
 To install you have to go into Kodi Setting > Addons > Install from zip file (allow unknown sources) > Open the downloaded file
 
