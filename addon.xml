@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="service.discord.richpresence"
   name="Discord Rich Presence"
-  version="1.3.1"
+  version="1.3.2"
   provider-name="Hiumee">
 <requires>
   <import addon="xbmc.python" version="2.25.0"/>
