@@ -44,7 +44,6 @@ class ServiceRichPresence:
     def __init__(self):
         self.presence = None
         self.settings = {}
-        self.lastActivity = None
         self.paused = True
         self.connected = False
 
@@ -67,7 +66,6 @@ class ServiceRichPresence:
                 # update every 5s just in case
 
         self.connected = True
-        self.lastActivity = None
         try:
             self.updatePresence()
         except Exception as e:
@@ -249,30 +247,28 @@ class ServiceRichPresence:
                     remainingTime = fullTime - currentTime
                     activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
 
-            if activity != self.lastActivity:
-                self.lastActivity = activity
-                if activity == None:
-                    try:
-                        self.presence.clear_activity()
-                    except Exception as e:
-                        log("Error while clearing: " + str(e))
+            if activity == None:
+                try:
+                    self.presence.clear_activity()
+                except Exception as e:
+                    log("Error while clearing: " + str(e))
+            else:
+                if self.settings['client_id'] != self.clientId:
+                    self.clientId = self.settings['client_id']
+                    self.presence.close()
+                    self.presence = None
+                    self.connected = False
+                    self.connectToDiscord()
+                    self.updatePresence()
                 else:
-                    if self.settings['client_id'] != self.clientId:
-                        self.clientId = self.settings['client_id']
-                        self.presence.close()
-                        self.presence = None
+                    log("Activity set: " + str(activity))
+                    try:
+                        self.presence.set_activity(activity)
+                    except IOError:
+                        log("Activity set failed. Reconnecting to Discord")
                         self.connected = False
                         self.connectToDiscord()
-                        self.updatePresence()
-                    else:
-                        log("Activity set: " + str(activity))
-                        try:
-                            self.presence.set_activity(activity)
-                        except IOError:
-                            log("Activity set failed. Reconnecting to Discord")
-                            self.connected = False
-                            self.connectToDiscord()
-                            self.presence.set_activity(activity)
+                        self.presence.set_activity(activity)
 
 class MyPlayer(xbmc.Player):
     def __init__(self):
