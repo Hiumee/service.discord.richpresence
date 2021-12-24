@@ -198,9 +198,13 @@ class UnixDiscordIpcClient(DiscordIpcClient):
         else:
             dir_path = "/tmp"
         snap_path = os.path.join(dir_path, "snap.discord")
+        flatpak_path = os.path.join(dir_path, "app/com.discordapp.Discord")
+
         if os.path.exists(snap_path):
             for i in range(10):
                 yield os.path.join(snap_path, "discord-ipc-{}".format(i))
+        for i in range(10):
+            yield os.path.join(flatpak_path, "discord-ipc-{}".format(i))
         for i in range(10):
             yield os.path.join(dir_path, "discord-ipc-{}".format(i))
 

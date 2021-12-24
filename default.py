@@ -3,6 +3,7 @@ import json
 import time
 import re
 import requests
+import urllib.parse
 
 from lib import discordpresence
 
@@ -12,13 +13,6 @@ def log(msg):
 DISCORD_CLIENT_ID = '0'
 CLIENT_ID = ['544620244014989312',
              '570950300446359552']
-
-
-def getShowImage(showTitle):
-    if showTitle in AVAIABLE_IMAGES:
-        return AVAIABLE_IMAGES[showTitle]
-    return "default"
-
 
 def removeKodiTags(text):
     log("Removing tags for: " + text)
@@ -126,7 +120,7 @@ class ServiceRichPresence:
 
     def craftEpisodeState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : getShowImage(data.getTVShowTitle()),
+        activity['assets'] = {'large_image' : "https://kodi-richpresence.herokuapp.com/" + urllib.parse.quote(data.getTVShowTitle()),
                               'large_text' : data.getTVShowTitle()}
 
         state = self.getEpisodeState(data)
@@ -154,7 +148,7 @@ class ServiceRichPresence:
 
     def craftMovieState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : 'default',
+        activity['assets'] = {'large_image' : "https://kodi-richpresence.herokuapp.com/" + urllib.parse.quote(data.getTitle()),
                               'large_text' : removeKodiTags(data.getTitle())}
 
         state = self.getMovieState(data)
