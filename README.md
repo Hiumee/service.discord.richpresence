@@ -32,4 +32,3 @@ The updates will be downloaded automatically
 
 ## Bug submitting and features
 You can open an issue or message me on Discord (Hiumee#6784 or join [Discord Server](https://discord.gg/MmCUM7dbjr))
-![147386844-a7047547-2553-466d-99a3-10139916d71a](https://user-images.githubusercontent.com/42638867/147386903-267ad552-a1de-4164-9481-2116d7187fd5.png)
