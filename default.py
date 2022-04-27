@@ -33,6 +33,16 @@ def removeKodiTags(text):
 
     return text
 
+class UnsupportedVideoType:
+    def __init__(self, title):
+        self.title = title.split("\\")[-1].split("/")[-1]
+
+    def getTitle(self):
+        return self.title
+
+    def getMediaType(self):
+        return 'Unknown'
+
 
 class ServiceRichPresence:
     def __init__(self):
@@ -86,7 +96,10 @@ class ServiceRichPresence:
     def gatherData(self):
         player = xbmc.Player()
         if player.isPlayingVideo():
-            return player.getVideoInfoTag()
+            data = player.getVideoInfoTag()
+            if data.getTitle() == "":
+                data = UnsupportedVideoType(player.getPlayingFile())
+            return data
             
         return None
 
@@ -163,7 +176,8 @@ class ServiceRichPresence:
     def craftVideoState(self, data):
         activity = {}
 
-        title = data.getTitle() or data.getTagLine() or data.getFile()
+        log("Crafting video state")
+        title = data.getTitle()
         title = removeKodiTags(title)
 
         activity['assets'] = {'large_image' : 'default',
