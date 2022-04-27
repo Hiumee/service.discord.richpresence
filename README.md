@@ -5,7 +5,7 @@ This addon will display what are you watching with Kodi on Discord using the Ric
 
 Episode Paused  | Episode Playing| Movie Playing
 ----------------|----------------|--------------
-![Screenshot_1](https://i.imgur.com/Yd5h8jx.png)|![Screenshot_2](https://i.imgur.com/e5bGekT.png)|![Screenshot_3](https://i.imgur.com/06y8aoP.png)
+![image](https://user-images.githubusercontent.com/42638867/147386844-a7047547-2553-466d-99a3-10139916d71a.png)|![image](https://user-images.githubusercontent.com/42638867/147386853-e60f2031-61ff-4dfc-8cbe-f99cc159c73d.png)|![image](https://user-images.githubusercontent.com/42638867/147386930-b00d8f0a-b961-4e8f-9a42-6112f03eab45.png)
 
 ## Info
 Media types:
@@ -17,8 +17,8 @@ Media types:
 
 Features:
 - [x] Display what is playing
-- [ ] Allow user to edit what is displayed and where (partialy done)
-- [ ] Image updating depending on media
+- [x] Allow user to edit what is displayed and where
+- [x] Image updating depending on media (it shows an image of the movie/show you are watching)
 
 ## Download and Installation
 
@@ -31,4 +31,4 @@ Then go to Addons > Install from repository > Hiumee's Repository > Services > D
 The updates will be downloaded automatically
 
 ## Bug submitting and features
-You can open an issue or message me on Discord (Hiumee#6784 or join [Discord Server](https://discord.gg/fKechF7gNk))
+You can open an issue or message me on Discord (Hiumee#6784 or join [Discord Server](https://discord.gg/MmCUM7dbjr))
