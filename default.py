@@ -14,6 +14,8 @@ DISCORD_CLIENT_ID = '0'
 CLIENT_ID = ['544620244014989312',
              '570950300446359552']
 
+IMAGES_URL = ""
+
 def removeKodiTags(text):
     log("Removing tags for: " + text)
 
@@ -133,7 +135,8 @@ class ServiceRichPresence:
 
     def craftEpisodeState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : "https://kodi-richpresence.herokuapp.com/" + urllib.parse.quote(data.getTVShowTitle()),
+
+        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTVShowTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber()) + "&type=tv") or "default",
                               'large_text' : data.getTVShowTitle()}
 
         state = self.getEpisodeState(data)
@@ -161,7 +164,7 @@ class ServiceRichPresence:
 
     def craftMovieState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : "https://kodi-richpresence.herokuapp.com/" + urllib.parse.quote(data.getTitle()),
+        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber()) + "&type=movie") or "default",
                               'large_text' : removeKodiTags(data.getTitle())}
 
         state = self.getMovieState(data)
@@ -330,10 +333,8 @@ class MyMonitor(xbmc.Monitor):
         drp.updateSettings()
         drp.updatePresence()
 
-AVAIABLE_IMAGES = []
-
 try:
-    AVAIABLE_IMAGES = json.loads(requests.get("https://hiumee.github.io/kodi/custom.json").text)
+    IMAGES_URL = requests.get("https://hiumee.github.io/kodi/images_url").text.strip()
 except Exception:
     pass
 
