@@ -31,4 +31,4 @@ Then go to Addons > Install from repository > Hiumee's Repository > Services > D
 The updates will be downloaded automatically
 
 ## Bug submitting and features
-You can open an issue or message me on Discord (Hiumee#6784 or join [Discord Server](https://discord.gg/MmCUM7dbjr))
+You can open an issue or message me on Discord (hiumee or join [Discord Server](https://discord.gg/MmCUM7dbjr))
