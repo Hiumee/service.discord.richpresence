@@ -65,3 +65,7 @@ msgstr ""
 msgctxt "#32022"
 msgid "Show title"
 msgstr ""
+
+msgctxt "#32023"
+msgid "Display time"
+msgstr ""
