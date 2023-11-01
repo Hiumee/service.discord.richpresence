@@ -3,6 +3,7 @@
     <category label="32001">
         <setting label="32002" type="bool" id="inmenu" default="true"/>
         <setting label="32003" type="enum" id="client_id" lvalues="32004|32005"/>
+        <setting label="32024" type="bool" id="use_id_lookup" default="true" />
     </category>
     <category label="32010">
         <setting label="32011" type="lsep"/>
@@ -12,5 +13,6 @@
         <setting label="32020" type="lsep"/>
         <setting label="32016" type="enum" id="episode_details" lvalues="32022|32021|32013|32015"/>
         <setting label="32012" type="enum" id="episode_state" lvalues="32021|32022|32013|32015"/>
+        <setting label="32016" type="enum" id="episode_state" lvalues="32021|32022|32013|32015"/>
     </category>
 </settings>

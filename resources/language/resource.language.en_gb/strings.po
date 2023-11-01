@@ -69,3 +69,7 @@ msgstr ""
 msgctxt "#32023"
 msgid "Display time"
 msgstr ""
+
+msgctxt "#32024"
+msgid "Use ID lookup - disable if name is correct but id is not TMDB or IMDB"
+msgstr ""

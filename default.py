@@ -91,6 +91,7 @@ class ServiceRichPresence:
 
         self.settings['inmenu'] = addon.getSettingBool('inmenu')
         self.settings['client_id'] = addon.getSettingInt('client_id')
+        self.settings['use_id_lookup'] = addon.getSettingBool('use_id_lookup')
 
         self.settings['display_time'] = addon.getSettingBool('display_time')
 
@@ -138,7 +139,7 @@ class ServiceRichPresence:
     def craftEpisodeState(self, data):
         activity = {}
 
-        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTVShowTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber()) + "&type=tv") or "default",
+        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTVShowTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber() if self.settings["use_id_lookup"] else "") + "&type=tv") or "default",
                               'large_text' : data.getTVShowTitle()}
 
         state = self.getEpisodeState(data)
@@ -166,7 +167,7 @@ class ServiceRichPresence:
 
     def craftMovieState(self, data):
         activity = {}
-        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber()) + "&type=movie") or "default",
+        activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber() if self.settings["use_id_lookup"] else "") + "&type=movie") or "default",
                               'large_text' : removeKodiTags(data.getTitle())}
 
         state = self.getMovieState(data)
