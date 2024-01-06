@@ -54,6 +54,10 @@ msgctxt "#32016"
 msgid "Top text"
 msgstr ""
 
+msgctxt "#32017"
+msgid "Directors"
+msgstr ""
+
 msgctxt "#32020"
 msgid "Episode"
 msgstr ""

@@ -125,6 +125,10 @@ class ServiceRichPresence:
             return data.getTVShowTitle()
         if self.settings['episode_state'] == 2:
             return data.getGenre()
+        if self.settings['episode_state'] == 3:
+            directors = data.getDirectors()
+            if directors:
+                return ", ".join(directors)
         return None
 
     def getEpisodeDetails(self, data):
@@ -134,6 +138,10 @@ class ServiceRichPresence:
             return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),removeKodiTags(data.getTitle()))
         if self.settings['episode_details'] == 2:
             return data.getGenre()
+        if self.settings['episode_details'] == 3:
+            directors = data.getDirectors()
+            if directors:
+                return ", ".join(directors)
         return None
 
     def craftEpisodeState(self, data):
@@ -156,6 +164,10 @@ class ServiceRichPresence:
             return data.getGenre()
         if self.settings['movie_state'] == 1:
             return removeKodiTags(data.getTitle())
+        if self.settings['movie_state'] == 2:
+            directors = data.getDirectors()
+            if directors:
+                return ", ".join(directors)
         return None
 
     def getMovieDetails(self, data):
@@ -163,6 +175,10 @@ class ServiceRichPresence:
             return removeKodiTags(data.getTitle())
         if self.settings['movie_details'] == 1:
             return data.getGenre()
+        if self.settings['movie_details'] == 3:
+            directors = data.getDirectors()
+            if directors:
+                return ", ".join(directors)
         return None
 
     def craftMovieState(self, data):
