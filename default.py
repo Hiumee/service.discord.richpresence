@@ -11,8 +11,7 @@ def log(msg):
     xbmc.log("[Discord RP] " + msg)
 
 DISCORD_CLIENT_ID = '0'
-CLIENT_ID = ['544620244014989312',
-             '570950300446359552']
+CLIENT_ID = ['570950300446359552','1267115234674348135','1267115677337256057']
 
 IMAGES_URL = ""
 
@@ -59,12 +58,16 @@ class ServiceRichPresence:
     def setPauseState(self, state):
         self.paused = state
 
-    def connectToDiscord(self):
+    def connectToDiscord(self, client_id=None):
         self.connected = False
         self.presence = None
         while not self.presence:
             try:
-                self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[self.clientId])
+                if client_id == None:
+                    client_id = self.settings['client_id']
+                    if client_id == 3:
+                        client_id = 0
+                self.presence = discordpresence.DiscordIpcClient.for_platform(CLIENT_ID[client_id])
             except Exception as e:
                 log("Could not connect to discord: "+str(e))
                 self.presence = None
@@ -90,7 +93,10 @@ class ServiceRichPresence:
         self.settings['movie_details'] = addon.getSettingInt('movie_details')
 
         self.settings['inmenu'] = addon.getSettingBool('inmenu')
+        self.settings['auto_client_id'] = False
         self.settings['client_id'] = addon.getSettingInt('client_id')
+        if self.settings['client_id'] == 3:
+            self.settings['auto_client_id'] = True
         self.settings['use_id_lookup'] = addon.getSettingBool('use_id_lookup')
 
         self.settings['display_time'] = addon.getSettingBool('display_time')
@@ -228,23 +234,32 @@ class ServiceRichPresence:
             data = self.gatherData()
 
             activity = None
-            #activity['assets'] = {'large_image' : 'default',
-            #                        'large_text' : self.settings['large_text']}
+            used_client_id = self.settings['client_id']
 
             if not data:
                 # no video playing
                 log("Setting default")
                 if self.settings['inmenu']:
                     activity = self.craftNoVideoState(data)
+                    if self.settings['auto_client_id']:
+                        used_client_id = 0
             else:
                 if data.getMediaType() == 'episode':
                     activity = self.craftEpisodeState(data)
+                    if self.settings['auto_client_id']:
+                        used_client_id = 2
                 elif data.getMediaType() == 'movie':
                     activity = self.craftMovieState(data)
+                    if self.settings['auto_client_id']:
+                        used_client_id = 1
                 elif data.getMediaType() == 'video':
                     activity = self.craftVideoState(data)
+                    if self.settings['auto_client_id']:
+                        used_client_id = 0
                 else:
                     activity = self.craftVideoState(data)
+                    if self.settings['auto_client_id']:
+                        used_client_id = 0
                     log("Unsupported media type: "+str(data.getMediaType()))
                     log("Using workaround")
 
@@ -284,21 +299,22 @@ class ServiceRichPresence:
                 except Exception as e:
                     log("Error while clearing: " + str(e))
             else:
-                if self.settings['client_id'] != self.clientId:
-                    self.clientId = self.settings['client_id']
+                if used_client_id != self.clientId:
+                    self.clientId = used_client_id
                     self.presence.close()
                     self.presence = None
                     self.connected = False
-                    self.connectToDiscord()
+                    self.connectToDiscord(used_client_id)
                     self.updatePresence()
                 else:
                     log("Activity set: " + str(activity))
+                    activity['type'] = 3
                     try:
                         self.presence.set_activity(activity)
                     except IOError:
                         log("Activity set failed. Reconnecting to Discord")
                         self.connected = False
-                        self.connectToDiscord()
+                        self.connectToDiscord(used_client_id)
                         self.presence.set_activity(activity)
 
 class MyPlayer(xbmc.Player):

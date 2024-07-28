@@ -19,11 +19,19 @@ msgid "Playing ..."
 msgstr ""
 
 msgctxt "#32004"
-msgid "Watching"
+msgid "Kodi"
 msgstr ""
 
 msgctxt "#32005"
-msgid "Kodi"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#32006"
+msgid "TV"
+msgstr ""
+
+msgctxt "#32007"
+msgid "Auto (Movies/TV)"
 msgstr ""
 
 msgctxt "#32010"
