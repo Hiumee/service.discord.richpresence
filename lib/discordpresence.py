@@ -74,11 +74,15 @@ class DiscordIpcClient():
         return buf
 
     def close(self):
-        
         try:
             self.send({}, op=OP_CLOSE)
-        finally:
+        except:
+            pass
+    
+        try:
             self._close()
+        except:
+            pass
 
     @abstractmethod
     def _close(self):
