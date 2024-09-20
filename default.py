@@ -291,7 +291,7 @@ class ServiceRichPresence:
                         currentTime = player.getTime()
                         fullTime = player.getTotalTime()
                         remainingTime = fullTime - currentTime
-                        activity['timestamps'] = {'end' : int(time.time()+remainingTime)}
+                        activity['timestamps'] = {'start': int(time.time()-currentTime ), 'end' : int(time.time()+remainingTime)}
 
             if activity == None:
                 try:
