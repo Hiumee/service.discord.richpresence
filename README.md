@@ -3,9 +3,8 @@
 ## Preview
 This addon will display what are you watching with Kodi on Discord using the Rich Presence.
 
-Episode Paused  | Episode Playing| Movie Playing
-----------------|----------------|--------------
-![image](https://user-images.githubusercontent.com/42638867/147386844-a7047547-2553-466d-99a3-10139916d71a.png)|![image](https://user-images.githubusercontent.com/42638867/147386853-e60f2031-61ff-4dfc-8cbe-f99cc159c73d.png)|![image](https://user-images.githubusercontent.com/42638867/147386930-b00d8f0a-b961-4e8f-9a42-6112f03eab45.png)
+![image](https://github.com/user-attachments/assets/dcf71a76-0584-4d8d-b9c8-93feab2d933d)
+
 
 ## Info
 Media types:
