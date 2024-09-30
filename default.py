@@ -126,7 +126,7 @@ class ServiceRichPresence:
 
     def getEpisodeState(self, data):
         if self.settings['episode_state'] == 0:
-            return '{}x{:02} {}'.format(data.getSeason(),data.getEpisode(),removeKodiTags(data.getTitle()))
+            return removeKodiTags(data.getTitle())
         if self.settings['episode_state'] == 1:
             return data.getTVShowTitle()
         if self.settings['episode_state'] == 2:
@@ -154,7 +154,7 @@ class ServiceRichPresence:
         activity = {}
 
         activity['assets'] = {'large_image' : IMAGES_URL != "" and (IMAGES_URL + "?name=" + urllib.parse.quote(data.getTVShowTitle()) + "&id=" + urllib.parse.quote(data.getIMDBNumber() if self.settings["use_id_lookup"] else "") + "&type=tv") or "default",
-                              'large_text' : data.getTVShowTitle()}
+                              'large_text': 'Season {:02}, Episode {:02}'.format(data.getSeason(), data.getEpisode())}
 
         state = self.getEpisodeState(data)
         if state:
