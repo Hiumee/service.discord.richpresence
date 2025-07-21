@@ -3,7 +3,7 @@
 ## Preview
 This addon will display what are you watching with Kodi on Discord using the Rich Presence.
 
-![image](https://github.com/user-attachments/assets/dcf71a76-0584-4d8d-b9c8-93feab2d933d)
+![image](https://github.com/user-attachments/assets/c51bd4d4-0e5a-4041-98c1-0ae2d5f0c2ad)
 
 
 ## Info
