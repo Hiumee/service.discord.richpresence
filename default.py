@@ -262,6 +262,8 @@ class ServiceRichPresence:
                         used_client_id = 0
                     log("Unsupported media type: "+str(data.getMediaType()))
                     log("Using workaround")
+                    
+                activity['status_display_type'] = 2
 
                 if self.settings['display_time']:
                     currentTime = player.getTime()
