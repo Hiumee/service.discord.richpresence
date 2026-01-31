@@ -75,6 +75,11 @@ class DiscordIpcClient():
 
     def close(self):
         try:
+            self.clear_activity()
+        except:
+            pass
+        
+        try:
             self.send({}, op=OP_CLOSE)
         except:
             pass
