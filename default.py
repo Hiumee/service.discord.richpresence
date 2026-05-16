@@ -101,8 +101,101 @@ class ServiceRichPresence:
 
         self.settings['display_time'] = addon.getSettingBool('display_time')
 
+        self.settings['button_imdb_enabled'] = addon.getSettingBool('button_imdb_enabled')
+        self.settings['button_imdb_episode_link'] = addon.getSettingBool('button_imdb_episode_link')
+        self.settings['button_tmdb_enabled'] = addon.getSettingBool('button_tmdb_enabled')
+        self.settings['button_tmdb_episode_link'] = addon.getSettingBool('button_tmdb_episode_link')
+
         # get setting
         log(str(self.settings))
+
+    def getShowIds(self):
+        """Return (imdb_id, tmdb_id) for the currently playing TV show via Kodi JSON-RPC.
+        Uses VideoPlayer.TvShowDBID to look up the show in the library."""
+        show_imdb_id = None
+        show_tmdb_id = None
+        try:
+            show_dbid = xbmc.getInfoLabel('VideoPlayer.TvShowDBID')
+            if show_dbid and show_dbid.isdigit():
+                query = json.dumps({
+                    'jsonrpc': '2.0',
+                    'method': 'VideoLibrary.GetTVShowDetails',
+                    'params': {'tvshowid': int(show_dbid), 'properties': ['uniqueid']},
+                    'id': 1
+                })
+                result = json.loads(xbmc.executeJSONRPC(query))
+                unique_ids = result.get('result', {}).get('tvshowdetails', {}).get('uniqueid', {})
+                show_imdb_id = unique_ids.get('imdb') or None
+                show_tmdb_id = unique_ids.get('tmdb') or None
+                log('Show IDs (library): imdb={} tmdb={}'.format(show_imdb_id, show_tmdb_id))
+        except Exception as e:
+            log('getShowIds error: ' + str(e))
+        return show_imdb_id, show_tmdb_id
+
+    def buildButtons(self, data, media_type):
+        buttons = []
+
+        # Episode-level IDs from InfoLabels
+        imdb_id = None
+        tmdb_id = None
+        try:
+            unique_ids = data.getUniqueIDs()
+            imdb_id = unique_ids.get('imdb') or None
+            tmdb_id = unique_ids.get('tmdb') or None
+        except Exception:
+            imdb_id = xbmc.getInfoLabel('VideoPlayer.UniqueID(imdb)') or None
+            tmdb_id = xbmc.getInfoLabel('VideoPlayer.UniqueID(tmdb)') or None
+
+        # getIMDBNumber() returns tt-prefixed IMDb ID when available
+        raw_id = data.getIMDBNumber()
+        primary_imdb_id = raw_id if (raw_id and raw_id.startswith('tt')) else None
+
+        if not imdb_id and not tmdb_id:
+            imdb_id = primary_imdb_id
+
+        ep_link = media_type == 'episode'
+
+        # Fetch show-level IDs from library if any button needs them
+        # TMDb always needs the show ID for episodes (both show and episode URL formats use it)
+        show_imdb_id = None
+        show_tmdb_id = None
+        needs_show_ids = ep_link and (
+            (self.settings['button_imdb_enabled'] and not self.settings['button_imdb_episode_link']) or
+            self.settings['button_tmdb_enabled']
+        )
+        if needs_show_ids:
+            show_imdb_id, show_tmdb_id = self.getShowIds()
+
+        if self.settings['button_imdb_enabled']:
+            if ep_link and self.settings['button_imdb_episode_link']:
+                link_id = imdb_id  # episode-level
+            elif ep_link:
+                link_id = show_imdb_id or primary_imdb_id  # show-level
+            else:
+                link_id = imdb_id  # movie
+            if link_id:
+                buttons.append({
+                    'label': 'View on IMDb',
+                    'url': 'https://www.imdb.com/title/{}/'.format(link_id)
+                })
+
+        if self.settings['button_tmdb_enabled']:
+            if ep_link and self.settings['button_tmdb_episode_link']:
+                sid = show_tmdb_id or tmdb_id  # show ID required for episode URL
+                if sid:
+                    url = 'https://www.themoviedb.org/tv/{}/season/{}/episode/{}'.format(
+                        sid, data.getSeason(), data.getEpisode())
+                else:
+                    url = None
+            elif ep_link:
+                sid = show_tmdb_id or tmdb_id
+                url = 'https://www.themoviedb.org/tv/{}'.format(sid) if sid else None
+            else:
+                url = 'https://www.themoviedb.org/movie/{}'.format(tmdb_id) if tmdb_id else None
+            if url:
+                buttons.append({'label': 'View on TMDb', 'url': url})
+
+        return buttons[:2]  # Discord allows a maximum of 2 buttons
 
     def gatherData(self):
         player = xbmc.Player()
@@ -163,6 +256,11 @@ class ServiceRichPresence:
         details = self.getEpisodeDetails(data)
         if details:
             activity['details'] = details
+
+        buttons = self.buildButtons(data, 'episode')
+        if buttons:
+            activity['buttons'] = buttons
+
         return activity
 
     def getMovieState(self, data):
@@ -198,7 +296,12 @@ class ServiceRichPresence:
 
         details = self.getMovieDetails(data)
         if details:
-            activity['details'] = details 
+            activity['details'] = details
+
+        buttons = self.buildButtons(data, 'movie')
+        if buttons:
+            activity['buttons'] = buttons
+
         return activity
 
     def craftVideoState(self, data):
