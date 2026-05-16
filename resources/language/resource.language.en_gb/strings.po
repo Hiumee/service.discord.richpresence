@@ -109,3 +109,7 @@ msgstr ""
 msgctxt "#32030"
 msgid "Link to episode (instead of show)"
 msgstr ""
+
+msgctxt "#32031"
+msgid "Link to episode (instead of show)"
+msgstr ""

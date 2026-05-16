@@ -20,6 +20,6 @@
         <setting label="32030" type="bool" id="button_imdb_episode_link" default="false"/>
         <setting label="32028" type="lsep"/>
         <setting label="32029" type="bool" id="button_tmdb_enabled" default="false"/>
-        <setting label="32030" type="bool" id="button_tmdb_episode_link" default="false"/>
+        <setting label="32031" type="bool" id="button_tmdb_episode_link" default="false"/>
     </category>
 </settings>
