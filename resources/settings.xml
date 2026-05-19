@@ -14,4 +14,12 @@
         <setting label="32016" type="enum" id="episode_details" lvalues="32022|32021|32013|32017|32015"/>
         <setting label="32012" type="enum" id="episode_state" lvalues="32021|32022|32013|32017|32015"/>
     </category>
+    <category label="32025">
+        <setting label="32026" type="lsep"/>
+        <setting label="32027" type="bool" id="button_imdb_enabled" default="false"/>
+        <setting label="32030" type="bool" id="button_imdb_episode_link" default="false"/>
+        <setting label="32028" type="lsep"/>
+        <setting label="32029" type="bool" id="button_tmdb_enabled" default="false"/>
+        <setting label="32031" type="bool" id="button_tmdb_episode_link" default="false"/>
+    </category>
 </settings>

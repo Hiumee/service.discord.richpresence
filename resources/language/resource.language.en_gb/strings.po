@@ -85,3 +85,31 @@ msgstr ""
 msgctxt "#32024"
 msgid "Use ID lookup - disable if name is correct but id is not TMDB or IMDB"
 msgstr ""
+
+msgctxt "#32025"
+msgid "Buttons"
+msgstr ""
+
+msgctxt "#32026"
+msgid "IMDb"
+msgstr ""
+
+msgctxt "#32027"
+msgid "Show IMDb button"
+msgstr ""
+
+msgctxt "#32028"
+msgid "TMDb"
+msgstr ""
+
+msgctxt "#32029"
+msgid "Show TMDb button"
+msgstr ""
+
+msgctxt "#32030"
+msgid "Link to episode (instead of show)"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Link to episode (instead of show)"
+msgstr ""
